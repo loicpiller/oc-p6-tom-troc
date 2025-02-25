@@ -1,0 +1,14 @@
+{
+  "author": "Loïc PILLER",
+  "autoload": {
+    "psr-4": {
+      "MVC\\Core\\": "core/",
+      "App\\Controllers\\": "app/controllers/",
+      "App\\Models\\": "app/models/",
+      "App\\Views\\": "app/views/"
+    }
+  },
+  "require": {
+    "ext-pdo": "*"
+  }
+}
