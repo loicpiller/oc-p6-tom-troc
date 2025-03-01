@@ -2,8 +2,8 @@
 
 namespace MVC\Core;
 
+use Exception;
 use InvalidArgumentException;
-use MVC\Core\Database;
 use PDO;
 
 class QueryBuilder
@@ -97,5 +97,58 @@ class QueryBuilder
         $query = $this->pdo->prepare($sql);
         $query->execute($this->parameters);
         return $query->fetchAll();
+    }
+
+    /**
+     * Inserts a new row into the table.
+     *
+     * @param array $data An associative array of column names to values.
+     * @return bool True if the insertion was successful, false otherwise.
+     */
+    public function insert(array $data): bool
+    {
+        $columns = implode(', ', array_keys($data));
+        $values = implode(', ', array_fill(0, count($data), '?'));
+        $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute(array_values($data));
+    }
+
+    /**
+     * Updates rows in the table.
+     *
+     * @param array $data An associative array of column names to values.
+     * @return bool True if the update was successful, false otherwise.
+     * @throws Exception
+     */
+    public function update(array $data): bool
+    {
+        if (empty($this->where)) {
+            throw new Exception("Update requires at least one WHERE condition to prevent mass updates.");
+        }
+
+        $set = implode(', ', array_map(fn($col) => "$col = ?", array_keys($data)));
+        $sql = "UPDATE $this->table SET $set WHERE " . implode(' AND ', $this->where);
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([...array_values($data), ...$this->parameters]);
+    }
+
+    /**
+     * Deletes rows from the table.
+     *
+     * @return bool True if the deletion was successful, false otherwise.
+     * @throws Exception If no WHERE conditions are specified.
+     */
+    public function delete(): bool
+    {
+        if (empty($this->where)) {
+            throw new Exception("Delete requires at least one WHERE condition to prevent mass deletions.");
+        }
+
+        $sql = "DELETE FROM $this->table WHERE " . implode(' AND ', $this->where);
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($this->parameters);
     }
 }
