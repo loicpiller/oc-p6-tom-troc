@@ -10,7 +10,7 @@ class QueryBuilder
 {
     private PDO $pdo;
     private string $table;
-    private array $select;
+    private array $select = ['*'];
     private array $where = [];
     private array $parameters = [];
     private array $orderBy = [];
@@ -150,5 +150,26 @@ class QueryBuilder
         $sql = "DELETE FROM $this->table WHERE " . implode(' AND ', $this->where);
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($this->parameters);
+    }
+
+    /**
+     * Fetches the first matching row from the database.
+     *
+     * @return array|null The first matching row, or null if none were found.
+     */
+    public function first(): ?array
+    {
+        $sql = "SELECT " . implode(', ', $this->select) . " FROM " . $this->table;
+
+        if (!empty($this->where)) {
+            $sql .= " WHERE " . implode(' AND ', $this->where);
+        }
+
+        $sql .= " LIMIT 1";
+
+        $query = $this->pdo->prepare($sql);
+        $query->execute($this->parameters);
+
+        return $query->fetch() ?: null;
     }
 }
