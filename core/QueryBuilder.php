@@ -14,6 +14,8 @@ class QueryBuilder
     private array $where = [];
     private array $parameters = [];
     private array $orderBy = [];
+    private array $groupBy = [];
+    private array $joins = [];
 
     public function __construct()
     {
@@ -81,6 +83,43 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Specifies the columns to group by.
+     *
+     * @param string ...$columns The column names to group by.
+     * @return $this
+     */
+    public function groupBy(string ...$columns): QueryBuilder
+    {
+        $this->groupBy = array_merge($this->groupBy, $columns);
+        return $this;
+    }
+
+    /**
+     * Specifies a join with another table.
+     *
+     * @param string $table The table to join with.
+     * @param string $firstColumn The column on the current table.
+     * @param string $operator The operator to use in the ON clause (=, <, >, LIKE, etc.).
+     * @param string $secondColumn The column on the joined table.
+     * @param string $type The type of join (INNER, LEFT, RIGHT). Defaults to INNER.
+     * @return $this
+     * @throws InvalidArgumentException If the join type is not INNER, LEFT, or RIGHT.
+     */
+    public function join(string $table, string $firstColumn, string $operator, string $secondColumn, string $type = 'inner'): QueryBuilder
+    {
+        $type = strtoupper($type);
+
+        // Validate the join type
+        if (!in_array($type, ['INNER', 'LEFT', 'RIGHT'])) {
+            throw new InvalidArgumentException("Invalid join type: $type");
+        }
+
+        $this->joins[] = "$type JOIN $table ON $firstColumn $operator $secondColumn";
+        return $this;
+    }
+
+
     public function get(): array
     {
         $sql = "SELECT " . implode(', ', $this->select) . " FROM " . $this->table;
@@ -91,6 +130,14 @@ class QueryBuilder
 
         if (!empty($this->orderBy)) {
             $sql .= " ORDER BY " . implode(', ', $this->orderBy);
+        }
+
+        if (!empty($this->groupBy)) {
+            $sql .= " GROUP BY " . implode(', ', $this->groupBy);
+        }
+
+        if (!empty($this->joins)) {
+            $sql .= " " . implode(' ', $this->joins);
         }
 
         // Prepare the query to prevent SQL injection
