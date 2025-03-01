@@ -30,10 +30,10 @@ abstract class BaseModel
      * @param int $id The primary key value of the row to find.
      * @return array|null The row data as an associative array, or null if not found.
      */
-    public function find(int $id): ?array
+    public function find(mixed $keyValue): ?array
     {
         return $this->db
-            ->where($this->primaryKey, '=', $id)
+            ->where($this->primaryKey, '=', (string) $keyValue)
             ->first();
     }
 
