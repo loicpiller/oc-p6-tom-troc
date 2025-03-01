@@ -21,6 +21,7 @@ abstract class BaseModel
         if (!isset($this->table)) {
             throw new Exception("Model must define a protected \$table property.");
         }
+        $this->db->table($this->table);
     }
 
     /**
@@ -32,7 +33,6 @@ abstract class BaseModel
     public function find(int $id): ?array
     {
         return $this->db
-            ->table($this->table)
             ->where($this->primaryKey, '=', $id)
             ->first();
     }
@@ -44,7 +44,7 @@ abstract class BaseModel
      */
     public function all(): array
     {
-        return $this->db->table($this->table)->get();
+        return $this->db->get();
     }
 
     /**
@@ -60,11 +60,10 @@ abstract class BaseModel
     {
         if (isset($data[$this->primaryKey])) {
             return $this->db
-                ->table($this->table)
                 ->where($this->primaryKey, '=', $data[$this->primaryKey])
                 ->update($data);
         }
-        return $this->db->table($this->table)->insert($data);
+        return $this->db->insert($data);
     }
 
     /**
@@ -76,7 +75,6 @@ abstract class BaseModel
     public function delete(mixed $keyValue): bool
     {
         return $this->db
-            ->table($this->table)
             ->where($this->primaryKey, '=', (string) $keyValue)
             ->delete();
     }
