@@ -180,7 +180,6 @@ class QueryBuilder
 
         // Prepare the query to prevent SQL injection
         $query = $this->pdo->prepare($sql);
-        var_dump($query->queryString); die();
         $query->execute($this->parameters);
         return $query->fetchAll();
     }
