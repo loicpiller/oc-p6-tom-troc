@@ -33,7 +33,7 @@ abstract class BaseModel
     public function find(mixed $keyValue): ?array
     {
         return $this->db
-            ->where($this->primaryKey, '=', (string) $keyValue)
+            ->where($this->primaryKey, '=', $keyValue)
             ->first();
     }
 
@@ -75,7 +75,7 @@ abstract class BaseModel
     public function delete(mixed $keyValue): bool
     {
         return $this->db
-            ->where($this->primaryKey, '=', (string) $keyValue)
+            ->where($this->primaryKey, '=', $keyValue)
             ->delete();
     }
 }

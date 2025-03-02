@@ -16,6 +16,8 @@ class QueryBuilder
     private array $orderBy = [];
     private array $groupBy = [];
     private array $joins = [];
+    private int $limit = 0;
+    private int $offset = 0;
 
     public function __construct()
     {
@@ -54,7 +56,7 @@ class QueryBuilder
      * @param string $value The value to compare the column to.
      * @return $this
      */
-    public function where(string $column, string $operator, string $value): QueryBuilder
+    public function where(string $column, string $operator, mixed $value): QueryBuilder
     {
         // Prevent SQL injection
         $this->where[] = "$column $operator ?";
@@ -119,7 +121,35 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * Specifies the maximum number of rows to return.
+     *
+     * @param int $limit The maximum number of rows to return.
+     * @return $this
+     */
+    public function limit(int $limit): QueryBuilder
+    {
+        $this->limit = $limit;
+        return $this;
+    }
 
+    /**
+     * Specifies the number of rows to skip before starting to return rows.
+     *
+     * @param int $offset The number of rows to skip.
+     * @return $this
+     */
+    public function offset(int $offset): QueryBuilder
+    {
+        $this->offset = $offset;
+        return $this;
+    }
+
+    /**
+     * Fetches rows from the table.
+     *
+     * @return array An array of associative arrays representing the rows.
+     */
     public function get(): array
     {
         $sql = "SELECT " . implode(', ', $this->select) . " FROM " . $this->table;
@@ -140,8 +170,17 @@ class QueryBuilder
             $sql .= " " . implode(' ', $this->joins);
         }
 
+        if ($this->limit > 0) {
+            $sql .= " LIMIT $this->limit";
+        }
+
+        if ($this->offset > 0) {
+            $sql .= " OFFSET $this->offset";
+        }
+
         // Prepare the query to prevent SQL injection
         $query = $this->pdo->prepare($sql);
+        var_dump($query->queryString); die();
         $query->execute($this->parameters);
         return $query->fetchAll();
     }
