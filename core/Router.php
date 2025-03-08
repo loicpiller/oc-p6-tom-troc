@@ -77,12 +77,52 @@ class Router extends Singleton
             $path = '/';
         }
 
+        // Check if the URL points to a file in the public folder
+        if (str_starts_with($path, '/public')) {
+            $filePath = __DIR__ . "/.." . $path;
+
+            if (file_exists($filePath) && is_file($filePath)) {
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+                // Manual mapping of Content-Type
+                $mimeTypes = [
+                    'css'  => 'text/css',
+                    'js'   => 'application/javascript',
+                    'json' => 'application/json',
+                    'webp' => 'image/webp',
+                    'jpg'  => 'image/jpeg',
+                    'jpeg' => 'image/jpeg',
+                    'png'  => 'image/png',
+                    'gif'  => 'image/gif',
+                    'svg'  => 'image/svg+xml',
+                    'woff' => 'font/woff',
+                    'woff2'=> 'font/woff2',
+                    'ttf'  => 'font/ttf',
+                    'eot'  => 'application/vnd.ms-fontobject',
+                    'otf'  => 'font/otf',
+                    'mp4'  => 'video/mp4',
+                    'webm' => 'video/webm',
+                    'ogg'  => 'audio/ogg',
+                ];
+
+                // Uses the mapping or falls back to `mime_content_type`
+                $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
+
+                header("Content-Type: " . $mimeType);
+                header("Content-Length: " . filesize($filePath));
+
+                readfile($filePath);
+                exit;
+            }
+        }
+
         // Check if the route exists for the GET request
         if (isset($this->routes[$path])) {
             // Call the handler (could be a closure or a controller method)
             call_user_func($this->routes[$path]);
         } else {
             // Handle 404 - route not found
+            http_response_code(404);
             echo "404 - Page not found";
         }
     }

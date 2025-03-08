@@ -3,6 +3,9 @@
 namespace MVC\Core;
 
 use Exception;
+use ScssPhp\ScssPhp\Compiler;
+use ScssPhp\ScssPhp\Exception\SassException;
+use ScssPhp\ScssPhp\OutputStyle;
 
 /**
  * Handles view rendering with a layout system.
@@ -11,6 +14,7 @@ class View
 {
     private string $title;
     private string $layout;
+    private array $styles = [];
 
     /**
      * Constructor.
@@ -22,6 +26,36 @@ class View
     {
         $this->title = $title;
         $this->layout = $layout;
+    }
+
+    /**
+     * Adds a CSS file compiled from SCSS.
+     *
+     * If the APP_ENV is set to "development" or the CSS file does not exist, it will be compiled from the corresponding SCSS file.
+     *
+     * @param string $scssFile SCSS file name (without extension) inside /assets/scss/.
+     * @throws Exception If the SCSS file is missing.
+     * @throws SassException If the SCSS compilation fails.
+     */
+    public function addStyle(string $scssFile): void
+    {
+        $cssPath = __DIR__ . "/../public/css/$scssFile.css";
+
+        $env = Config::getInstance()->get('APP_ENV');
+        if ($env === 'development' || !file_exists($cssPath)) {
+            $scssPath = __DIR__ . "/../assets/scss/$scssFile.scss";
+
+            if (!file_exists($scssPath)) {
+                throw new Exception("SCSS file not found: " . $scssPath);
+            }
+
+            $compiler = new Compiler();
+            $compiler->setOutputStyle(OutputStyle::COMPRESSED);
+            $compiledCss = $compiler->compileFile("$scssPath")->getCss();
+            file_put_contents($cssPath, $compiledCss);
+        }
+
+        $this->styles[] = $scssFile;
     }
 
     /**
@@ -43,6 +77,7 @@ class View
         }
 
         $title = $this->title;
+        $styles = $this->styles;
         ob_start();
         include $layoutPath;
         echo ob_get_clean();
