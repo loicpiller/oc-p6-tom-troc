@@ -3,8 +3,7 @@
 namespace MVC\Core;
 
 use Exception;
-
-// TODO: Support dynamic routes with parameters (e.g., /article/1)
+use ReflectionMethod;
 
 class Router extends Singleton
 {
@@ -12,6 +11,22 @@ class Router extends Singleton
      * Array to store GET routes (path => handler).
      */
     private array $routes = [];
+    private array $dynamicRoutes = [];
+
+    /**
+     * Converts a route path with parameters to a regex pattern.
+     *
+     * @param string $path The route path with parameters (e.g., /article/{id}).
+     * @param array $paramNames An array to store the parameter names.
+     * @return string The regex pattern (e.g., /^\/article\/([^/]+)$/).
+     */
+    private function convertToRegex(string $path, array &$paramNames): string
+    {
+        return '#^' . preg_replace_callback('/\{([^}]+)\}/', function ($matches) use (&$paramNames) {
+                $paramNames[] = $matches[1];
+                return '([^/]+)';
+            }, $path) . '$#';
+    }
 
     /**
      * Add a new GET route to the router.
@@ -23,7 +38,14 @@ class Router extends Singleton
     {
         // Ensure the path starts with a slash and avoid double slashes
         $path = '/' . ltrim($path, '/');
-        $this->routes[$path] = $handler;
+
+        if (str_contains($path, '{')) {
+            $paramNames = [];
+            $regex = $this->convertToRegex($path, $paramNames);
+            $this->dynamicRoutes[] = ['pattern' => $regex, 'handler' => $handler, 'paramNames' => $paramNames];
+        } else {
+            $this->routes[$path] = $handler;
+        }
     }
 
     /**
@@ -60,6 +82,86 @@ class Router extends Singleton
     }
 
     /**
+     * Serves a static file.
+     *
+     * If the file exists and is a file (not a directory), it will be served with the correct Content-Type.
+     * If the file doesn't exist, a 404 error will be sent and the code will exit.
+     *
+     * @param string $path The URL path of the file to serve (e.g., /public/css/style.css).
+     */
+    private function serveStaticFile(string $path): void
+    {
+        $filePath = __DIR__ . "/.." . $path;
+
+        if (file_exists($filePath) && is_file($filePath)) {
+            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+            // Manual mapping of Content-Type
+            $mimeTypes = [
+                'css'  => 'text/css',
+                'js'   => 'application/javascript',
+                'json' => 'application/json',
+                'webp' => 'image/webp',
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png'  => 'image/png',
+                'gif'  => 'image/gif',
+                'svg'  => 'image/svg+xml',
+                'woff' => 'font/woff',
+                'woff2'=> 'font/woff2',
+                'ttf'  => 'font/ttf',
+                'eot'  => 'application/vnd.ms-fontobject',
+                'otf'  => 'font/otf',
+                'mp4'  => 'video/mp4',
+                'webm' => 'video/webm',
+                'ogg'  => 'audio/ogg',
+            ];
+
+            // Uses the mapping or falls back to `mime_content_type`
+            $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
+
+            header("Content-Type: " . $mimeType);
+            header("Content-Length: " . filesize($filePath));
+
+            readfile($filePath);
+            exit;
+        }
+
+        http_response_code(404);
+        echo "404 - File not found";
+        exit;
+    }
+
+    /**
+     * Calls a handler and passes the parameters to it.
+     *
+     * If the handler is a controller method, this method will also convert the parameters to the correct types.
+     *
+     * @param callable $handler The handler to call.
+     * @param array $params The parameters to pass to the handler.
+     */
+    private function callHandler(callable $handler, array $params): void
+    {
+        if (is_array($handler) && count($handler) === 2) {
+            [$controller, $method] = $handler;
+            $reflection = new ReflectionMethod($controller, $method);
+            $parameters = $reflection->getParameters();
+
+            foreach ($parameters as $param) {
+                $name = $param->getName();
+                if (isset($params[$name]) && $param->hasType()) {
+                    $type = $param->getType()->getName();
+                    if ($type === 'int') {
+                        $params[$name] = (int) $params[$name];
+                    }
+                }
+            }
+        }
+
+        call_user_func_array($handler, $params);
+    }
+
+    /**
      * Dispatches a GET request to the associated route handler if it exists.
      *
      * This method:
@@ -77,53 +179,30 @@ class Router extends Singleton
             $path = '/';
         }
 
-        // Check if the URL points to a file in the public folder
+        // Serve static files
         if (str_starts_with($path, '/public')) {
-            $filePath = __DIR__ . "/.." . $path;
+            $this->serveStaticFile($path);
+            return;
+        }
 
-            if (file_exists($filePath) && is_file($filePath)) {
-                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        // Exact match route
+        if (isset($this->routes[$path])) {
+            call_user_func($this->routes[$path]);
+            return;
+        }
 
-                // Manual mapping of Content-Type
-                $mimeTypes = [
-                    'css'  => 'text/css',
-                    'js'   => 'application/javascript',
-                    'json' => 'application/json',
-                    'webp' => 'image/webp',
-                    'jpg'  => 'image/jpeg',
-                    'jpeg' => 'image/jpeg',
-                    'png'  => 'image/png',
-                    'gif'  => 'image/gif',
-                    'svg'  => 'image/svg+xml',
-                    'woff' => 'font/woff',
-                    'woff2'=> 'font/woff2',
-                    'ttf'  => 'font/ttf',
-                    'eot'  => 'application/vnd.ms-fontobject',
-                    'otf'  => 'font/otf',
-                    'mp4'  => 'video/mp4',
-                    'webm' => 'video/webm',
-                    'ogg'  => 'audio/ogg',
-                ];
-
-                // Uses the mapping or falls back to `mime_content_type`
-                $mimeType = $mimeTypes[$extension] ?? mime_content_type($filePath);
-
-                header("Content-Type: " . $mimeType);
-                header("Content-Length: " . filesize($filePath));
-
-                readfile($filePath);
-                exit;
+        // Dynamic route matching
+        foreach ($this->dynamicRoutes as $route) {
+            if (preg_match($route['pattern'], $path, $matches)) {
+                array_shift($matches);
+                $params = array_combine($route['paramNames'], $matches);
+                $this->callHandler($route['handler'], $params);
+                return;
             }
         }
 
-        // Check if the route exists for the GET request
-        if (isset($this->routes[$path])) {
-            // Call the handler (could be a closure or a controller method)
-            call_user_func($this->routes[$path]);
-        } else {
-            // Handle 404 - route not found
-            http_response_code(404);
-            echo "404 - Page not found";
-        }
+        // 404 Not Found
+        http_response_code(404);
+        echo "404 - Page not found";
     }
 }
