@@ -4,7 +4,7 @@ namespace MVC\Core;
 
 use Exception;
 
-abstract class BaseModel
+abstract class BaseRepository
 {
     protected QueryBuilder $db;
     protected string $table;
@@ -19,7 +19,7 @@ abstract class BaseModel
     {
         $this->db = new QueryBuilder();
         if (!isset($this->table)) {
-            throw new Exception("Model must define a protected \$table property.");
+            throw new Exception("Repository must define a protected \$table property.");
         }
         $this->db->table($this->table);
     }
