@@ -4,7 +4,8 @@
     "psr-4": {
       "MVC\\Core\\": "core/",
       "App\\Controllers\\": "app/controllers/",
-      "App\\Models\\": "app/models/",
+      "App\\Entities\\": "app/entities/",
+      "App\\Repositories\\": "app/repositories/",
       "App\\Views\\": "app/views/"
     }
   },
