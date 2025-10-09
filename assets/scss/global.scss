@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display&display=swap');
 
-$base-color: #FAF9F7;
-$light-gray: #F5F3EF;
-$dark-gray: #A6A6A6;
+@import 'color_palette';
 
 body {
   font-family: 'Inter', sans-serif;
@@ -47,4 +45,41 @@ footer {
   padding: 30px;
   font-size: 12px;
   font-weight: 300;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    
+    label {
+      color: $dark-gray;
+    }
+
+    input {
+      height: 50px;
+      padding: 10px;
+      border-radius: 6px;
+    }
+  }
+}
+
+.btn {
+  font-size: 16px;
+  font-weight: 600;
+  height: 63px;
+  border-radius: 10px;
+  padding: 22px 38px;
+
+  &.btn--primary {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+  }
 }

@@ -1,0 +1,43 @@
+@import 'color_palette';
+
+.auth {
+  display: flex;
+}
+
+.auth__content {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  padding: 120px;
+
+  a {
+    border-bottom: 1px solid black;
+  }
+}
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  margin-bottom: 60px;
+}
+
+form {
+  width: 322px;
+  margin-bottom: 40px;
+
+  input {
+    border: 1px solid $dark-gray;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+.auth__picture {
+  width: 50%;
+  img {
+    width: 100%;
+    object-fit: cover;
+  }
+}

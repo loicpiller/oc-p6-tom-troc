@@ -2,4 +2,6 @@
 
 return [
     '/' => 'HomeController@index',
+    '/connexion' => 'UserController@login',
+    '/inscription' => 'UserController@register',
 ];
