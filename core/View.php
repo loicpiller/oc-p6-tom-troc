@@ -21,11 +21,15 @@ class View
      *
      * @param string $title Page title.
      * @param string $layout Layout file (default: "main").
+     * @param array $styles Initial styles to include (default: ["global"]).
      */
-    public function __construct(string $title, string $layout = "main")
+    public function __construct(string $title, string $layout = "main", array $styles = ["reset", "global"])
     {
         $this->title = $title;
         $this->layout = $layout;
+        foreach ($styles as $style) {
+            $this->addStyle($style);
+        }
     }
 
     /**

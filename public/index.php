@@ -12,6 +12,8 @@ set_exception_handler([ErrorHandler::class, 'handle']);
 // Load configuration settings
 Config::getInstance()->loadFromFile(__DIR__ . '/../config/config.php');
 
+require_once __DIR__ . '/../app/helpers/url_helper.php';
+
 $router = Router::getInstance();
 $router->loadRoutesFromFile(__DIR__ . '/../config/routes.php');
 
