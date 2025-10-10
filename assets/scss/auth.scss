@@ -12,6 +12,12 @@
 
   a {
     border-bottom: 1px solid black;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: $primary-color;
+      border-bottom: 1px solid $primary-color;
+    }
   }
 }
 
