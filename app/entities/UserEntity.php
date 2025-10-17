@@ -56,7 +56,7 @@ class UserEntity extends BaseEntity
         return $this->avatar;
     }
 
-    public function setAvatar(string $avatar): void
+    public function setAvatar(?string $avatar): void
     {
         $this->avatar = $avatar;
     }
