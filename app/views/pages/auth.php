@@ -3,6 +3,10 @@
         <h1><?= $pageType === 'login' ? "Connexion" : "Inscription" ?></h1>
 
         <form action="" method="POST">
+            <?php if (null !== $error): ?>
+                <span class="error-message"><?= $error ?></span>
+            <?php endif ?>
+
             <?php if ($pageType === 'register'): ?>
                 <div class="input-group">
                     <label for="username">Pseudo</label>
