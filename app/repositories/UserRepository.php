@@ -21,4 +21,15 @@ class UserRepository extends BaseRepository
         }
         return $this->hydrate($userData);
     }
+
+    public function findUserById(int $id): ?UserEntity
+    {
+        $userData = $this->find($id);
+
+        if (null === $userData) {
+            return null;
+        }
+
+        return $this->hydrate($userData);
+    }
 }
