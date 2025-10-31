@@ -2,12 +2,33 @@
 
 namespace App\Controllers;
 
+use App\Repositories\BookRepository;
 use MVC\Core\View;
 use App\Repositories\UserRepository;
 use App\Entities\UserEntity;
 
 class UserController
 {
+
+    public function profile(): void
+    {
+        if (!isset($_SESSION['user'])) {
+            header('Location: ' . action_url('connexion'));
+            exit();
+        }
+
+        $bookRepo = new BookRepository();
+        $books = $bookRepo->findByUser($_SESSION['user']->getId());
+
+        $view = new View("Mon compte");
+        $view->addStyle("profile");
+        $view->render("pages/profile", [
+            'user' => $_SESSION['user'],
+            'error' => null,
+            'books' => $books,
+        ]);
+    }
+
     public function login(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,8 +39,9 @@ class UserController
             $user = $userRepository->findUserByEmail($email);
 
             if ($user && password_verify($password, $user->getPassword())) {
+                $user->setPassword('********');
                 $_SESSION['user'] = $user;
-                header('Location: ' . action_url('/'));
+                header('Location: ' . action_url('mon-compte'));
                 exit();
             } else {
                 $error = "Email ou mot de passe incorrect.";

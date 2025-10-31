@@ -1,0 +1,112 @@
+@import 'color_palette';
+
+h1 {
+  font-size: 26px;
+  margin-bottom: 60px
+}
+
+main {
+  padding: 120px;
+}
+
+#main-container {
+  max-width: 1440px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.profile {
+  display: flex;
+  gap: 35px;
+
+  > div {
+    width: 50%;
+    background-color: white;
+    border-radius: 20px;
+  }
+}
+
+.personal-infos {
+  padding: 40px 120px ;
+
+  p {
+    font-size: 16px;
+    margin-bottom: 35px;
+  }
+
+  input {
+    background-color: $pale-blue;
+    border: 1px solid $light-gray;
+  }
+}
+
+.books-table {
+  width: 100%;
+  text-align: left;
+  background-color: white;
+  border-radius: 20px;
+  overflow: hidden;
+
+  tr {
+    display: grid;
+    grid-gap: 60px;
+    grid-template-columns: repeat(6, 1fr);
+    border-bottom: 1px solid $light-gray;
+    padding: 30px 60px;
+    max-height: 130px;
+  }
+  
+  thead tr {
+    text-transform: uppercase;
+    font-size: 8px;
+    font-weight: 600;
+    padding-bottom: 10px;
+  }
+
+  tbody tr {
+    font-size: 12px;
+    align-items: center;
+    
+    &:nth-child(even) {
+      background: $pale-blue;
+    }
+  }
+
+  td.book-description {
+    overflow: hidden;
+    display: -webkit-box;
+    font-style: italic;
+    line-height: 1.3;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }
+
+  td.book-actions {
+    display: flex;
+    gap: 30px;
+    text-decoration: underline;
+
+    .delete {
+      color: $important-red;
+      text-decoration: underline;
+    }
+  }
+}
+
+.badge {
+  font-size: 9px;
+  color: white;
+  font-weight: 500px;
+  padding: 4px 14px;
+  border-radius: 30px;
+
+  &.available {
+    background-color: $pale-green;
+  }
+
+  &.not-available {
+    background-color: $pale-red;
+  }
+}

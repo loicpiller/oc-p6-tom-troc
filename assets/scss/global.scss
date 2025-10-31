@@ -5,6 +5,7 @@
 body {
   font-family: 'Inter', sans-serif;
   font-weight: 400;
+  color: $darker-gray;
   display: flex;
   flex-direction: column;
 }
@@ -45,6 +46,11 @@ footer {
   padding: 30px;
   font-size: 12px;
   font-weight: 300;
+}
+
+h1, h2 {
+  color: black;
+  font-family: 'Playfair Display', serif;
 }
 
 form {

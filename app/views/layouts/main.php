@@ -18,7 +18,7 @@
             <nav id="user-actions-nav" aria-label="Navigation pour les actions utilisateur">
                 <?php if (isset($_SESSION['user'])): ?>
                     <a href=""><img src="<?= img_url("icons/messaging.svg") ?>" alt="Icon de la messagerie" />Messagerie</a>
-                    <a href=""><img src="<?= img_url("icons/account.svg") ?>" alt="Icon de l'accès au compte utilisateur" />Mon compte</a>
+                    <a href="<?= action_url("mon-compte") ?>"><img src="<?= img_url("icons/account.svg") ?>" alt="Icon de l'accès au compte utilisateur" />Mon compte</a>
                     <a href="<?= action_url("deconnexion") ?>">Déconnexion</a>
                 <?php else: ?>
                     <a href="<?= action_url("inscription") ?>">Inscription</a>
