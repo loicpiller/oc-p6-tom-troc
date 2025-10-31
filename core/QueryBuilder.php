@@ -19,9 +19,21 @@ class QueryBuilder
     private int $limit = 0;
     private int $offset = 0;
 
+    private static array $queries = [];
+
     public function __construct()
     {
         $this->pdo = Database::getConnection();
+    }
+
+    public static function getQueries(): array
+    {
+        return self::$queries;
+    }
+
+    private static function logQuery(string $sql, array $params = [])
+    {
+        self::$queries[] = ['sql' => $sql, 'params' => $params];
     }
 
     /**
@@ -178,9 +190,13 @@ class QueryBuilder
             $sql .= " OFFSET $this->offset";
         }
 
+        self::logQuery($sql, $this->parameters);
+
         // Prepare the query to prevent SQL injection
         $query = $this->pdo->prepare($sql);
         $query->execute($this->parameters);
+        $this->where = [];
+        $this->parameters = [];
         return $query->fetchAll();
     }
 
@@ -195,6 +211,8 @@ class QueryBuilder
         $columns = implode(', ', array_keys($data));
         $values = implode(', ', array_fill(0, count($data), '?'));
         $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
+
+        self::logQuery($sql, array_values($data));
 
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(array_values($data));
@@ -216,8 +234,13 @@ class QueryBuilder
         $set = implode(', ', array_map(fn($col) => "$col = ?", array_keys($data)));
         $sql = "UPDATE $this->table SET $set WHERE " . implode(' AND ', $this->where);
 
+        self::logQuery($sql, [...array_values($data), ...$this->parameters]);
+
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([...array_values($data), ...$this->parameters]);
+        $ret = $stmt->execute([...array_values($data), ...$this->parameters]);
+        $this->where = [];
+        $this->parameters = [];
+        return $ret;
     }
 
     /**
@@ -232,9 +255,14 @@ class QueryBuilder
             throw new Exception("Delete requires at least one WHERE condition to prevent mass deletions.");
         }
 
+        self::logQuery($sql, $this->parameters);
+
         $sql = "DELETE FROM $this->table WHERE " . implode(' AND ', $this->where);
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute($this->parameters);
+        $ret = $stmt->execute($this->parameters);
+        $this->where = [];
+        $this->parameters = [];
+        return $ret;
     }
 
     /**
@@ -252,9 +280,13 @@ class QueryBuilder
 
         $sql .= " LIMIT 1";
 
+        self::logQuery($sql, $this->parameters);
+
         $query = $this->pdo->prepare($sql);
         $query->execute($this->parameters);
 
+        $this->where = [];
+        $this->parameters = [];
         return $query->fetch() ?: null;
     }
 }

@@ -85,6 +85,9 @@ class View
         ob_start();
         include $layoutPath;
         echo ob_get_clean();
+
+        $env = Config::getInstance()->get('APP_ENV');
+        if ($env === 'development') $this->renderDebug();
     }
 
     /**
@@ -117,5 +120,24 @@ class View
     private function buildViewPath(string $relativePath): string
     {
         return __DIR__ . "/../app/views/" . $relativePath . ".php";
+    }
+
+    private function renderDebug(): void
+    {
+        $queries = \MVC\Core\QueryBuilder::getQueries();
+        $session = $_SESSION ?? [];
+
+
+        echo '<strong>=== DEBUG ===</strong>';
+        echo '<strong>Session:</strong><pre>' . print_r($session, true) . '</pre>';
+        echo '<strong>SQL Queries:</strong><br>';
+
+        foreach ($queries as $q) {
+            echo htmlspecialchars($q['sql']) . '<br>';
+            if (!empty($q['params'])) {
+                echo 'Params: ' . htmlspecialchars(json_encode($q['params'])) . '<br>';
+            }
+            echo '<hr>';
+        }
     }
 }
