@@ -8,7 +8,8 @@ class UserRepository extends BaseRepository
 {
     protected string $table = 'user';
 
-    private function  hydrate(array $data): UserEntity
+    /** @param array<string, mixed> $data */
+    private function hydrate(array $data): UserEntity
     {
         return new UserEntity($data);
     }

@@ -4,7 +4,7 @@
 
         <form action="" method="POST">
             <?php if (null !== $error): ?>
-                <span class="error-message"><?= $error ?></span>
+                <span class="error-message"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></span>
             <?php endif ?>
 
             <?php if ($pageType === 'register'): ?>
