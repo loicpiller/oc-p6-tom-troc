@@ -28,7 +28,7 @@ abstract class BaseRepository
      * Finds a row by its primary key.
      *
      * @param int $id The primary key value of the row to find.
-     * @return array|null The row data as an associative array, or null if not found.
+     * @return array<string, mixed>|null The row data as an associative array, or null if not found.
      */
     public function find(mixed $keyValue): ?array
     {
@@ -40,7 +40,7 @@ abstract class BaseRepository
     /**
      * Retrieves all rows from the database.
      *
-     * @return array An array of associative arrays representing the rows.
+     * @return array<int, array<string, mixed>> An array of associative arrays representing the rows.
      */
     public function all(): array
     {

@@ -6,13 +6,13 @@ $config = Config::getInstance();
 $baseUrl = $config->get('BASE_URL');
 
 if (!function_exists('action_url')) {
+    /** @param array<string, mixed> $params */
     function action_url(string $action, array $params = []): string
     {
         global $baseUrl;
         $url = $baseUrl . '/' . ltrim($action, '/');
-        if (!empty($params)) {
-            $queryString = http_build_query($params);
-            $url .= '?' . $queryString;
+        foreach ($params as $param => $value) {
+            $url = str_replace('{'.$param.'}', $value, $url);
         }
         return $url;
     }

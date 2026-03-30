@@ -13,6 +13,7 @@ set_exception_handler([ErrorHandler::class, 'handle']);
 Config::getInstance()->loadFromFile(__DIR__ . '/../config/config.php');
 
 require_once __DIR__ . '/../app/helpers/url_helper.php';
+require_once __DIR__ . '/../app/helpers/upload_helper.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

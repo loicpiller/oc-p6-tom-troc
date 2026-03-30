@@ -15,6 +15,7 @@ class View
     private string $title;
     private string $layout;
     private array $styles = [];
+    private array $js = [];
 
     /**
      * Constructor.
@@ -60,6 +61,28 @@ class View
         }
 
         $this->styles[] = $scssFile;
+    }
+
+    /**
+     * Adds a JS file.
+     *
+     * @param string $jsFile JS file name (without extension) inside /public/js/.
+     */
+    public function addJS(string $jsFile): void
+    {
+        if (!in_array($jsFile, $this->js)) {
+            $this->js[] = $jsFile;
+        }
+    }
+
+    /**
+     * Renders the JS tags.
+     */
+    public function renderJS(): void
+    {
+        foreach ($this->js as $js) {
+            echo "<script src='/public/js/$js.js'></script>" . PHP_EOL;
+        }
     }
 
     /**

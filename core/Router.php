@@ -91,9 +91,15 @@ class Router extends Singleton
      */
     private function serveStaticFile(string $path): void
     {
-        $filePath = __DIR__ . "/.." . $path;
+        $publicRoot = realpath(__DIR__ . '/../public');
+        $filePath = realpath(__DIR__ . "/.." . $path);
 
-        if (file_exists($filePath) && is_file($filePath)) {
+        if (
+            $publicRoot !== false
+            && $filePath !== false
+            && str_starts_with($filePath, $publicRoot . DIRECTORY_SEPARATOR)
+            && is_file($filePath)
+        ) {
             $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
             // Manual mapping of Content-Type
@@ -173,7 +179,7 @@ class Router extends Singleton
     public function dispatch(): void
     {
         // Get the requested path
-        $path = rtrim($_SERVER['REQUEST_URI'], '/');
+        $path = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/', '/');
 
         if ($path === '') {
             $path = '/';

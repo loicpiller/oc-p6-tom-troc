@@ -21,6 +21,18 @@ class QueryBuilder
 
     private static array $queries = [];
 
+    private const ALLOWED_OPERATORS = [
+        '=',
+        '!=',
+        '<>',
+        '<',
+        '>',
+        '<=',
+        '>=',
+        'LIKE',
+        'NOT LIKE',
+    ];
+
     public function __construct()
     {
         $this->pdo = Database::getConnection();
@@ -44,7 +56,7 @@ class QueryBuilder
      */
     public function table(string $table): QueryBuilder
     {
-        $this->table = $table;
+        $this->table = $this->validateIdentifier($table, 'table');
         return $this;
     }
 
@@ -56,7 +68,7 @@ class QueryBuilder
      */
     public function select(string ...$columns): QueryBuilder
     {
-        $this->select = $columns;
+        $this->select = array_map(fn(string $column): string => $this->validateSelectExpression($column), $columns);
         return $this;
     }
 
@@ -65,12 +77,14 @@ class QueryBuilder
      *
      * @param string $column The column name.
      * @param string $operator The operator (=, <, >, LIKE, etc.).
-     * @param string $value The value to compare the column to.
+     * @param mixed $value The value to compare the column to.
      * @return $this
      */
     public function where(string $column, string $operator, mixed $value): QueryBuilder
     {
-        // Prevent SQL injection
+        $column = $this->validateIdentifier($column, 'column');
+        $operator = $this->validateOperator($operator);
+
         $this->where[] = "$column $operator ?";
         $this->parameters[] = $value;
         return $this;
@@ -86,6 +100,7 @@ class QueryBuilder
      */
     public function orderBy(string $column, string $direction): QueryBuilder
     {
+        $column = $this->validateIdentifier($column, 'column');
         $direction = strtoupper($direction);
 
         // Validate the direction
@@ -105,7 +120,11 @@ class QueryBuilder
      */
     public function groupBy(string ...$columns): QueryBuilder
     {
-        $this->groupBy = array_merge($this->groupBy, $columns);
+        $validatedColumns = array_map(
+            fn(string $column): string => $this->validateIdentifier($column, 'column'),
+            $columns
+        );
+        $this->groupBy = array_merge($this->groupBy, $validatedColumns);
         return $this;
     }
 
@@ -122,6 +141,10 @@ class QueryBuilder
      */
     public function join(string $table, string $firstColumn, string $operator, string $secondColumn, string $type = 'inner'): QueryBuilder
     {
+        $table = $this->validateIdentifier($table, 'table');
+        $firstColumn = $this->validateIdentifier($firstColumn, 'column');
+        $operator = $this->validateOperator($operator);
+        $secondColumn = $this->validateIdentifier($secondColumn, 'column');
         $type = strtoupper($type);
 
         // Validate the join type
@@ -160,11 +183,15 @@ class QueryBuilder
     /**
      * Fetches rows from the table.
      *
-     * @return array An array of associative arrays representing the rows.
+     * @return array<int, array<string, mixed>> An array of associative arrays representing the rows.
      */
     public function get(): array
     {
         $sql = "SELECT " . implode(', ', $this->select) . " FROM " . $this->table;
+
+        if (!empty($this->joins)) {
+            $sql .= " " . implode(' ', $this->joins);
+        }
 
         if (!empty($this->where)) {
             $sql .= " WHERE " . implode(' AND ', $this->where);
@@ -176,10 +203,6 @@ class QueryBuilder
 
         if (!empty($this->groupBy)) {
             $sql .= " GROUP BY " . implode(', ', $this->groupBy);
-        }
-
-        if (!empty($this->joins)) {
-            $sql .= " " . implode(' ', $this->joins);
         }
 
         if ($this->limit > 0) {
@@ -208,7 +231,9 @@ class QueryBuilder
      */
     public function insert(array $data): bool
     {
-        $columns = implode(', ', array_keys($data));
+        $columnsList = array_keys($data);
+        array_walk($columnsList, fn(string $column): string => $this->validateIdentifier($column, 'column'));
+        $columns = implode(', ', $columnsList);
         $values = implode(', ', array_fill(0, count($data), '?'));
         $sql = "INSERT INTO $this->table ($columns) VALUES ($values)";
 
@@ -231,7 +256,9 @@ class QueryBuilder
             throw new Exception("Update requires at least one WHERE condition to prevent mass updates.");
         }
 
-        $set = implode(', ', array_map(fn($col) => "$col = ?", array_keys($data)));
+        $columnsList = array_keys($data);
+        array_walk($columnsList, fn(string $column): string => $this->validateIdentifier($column, 'column'));
+        $set = implode(', ', array_map(fn($col) => "$col = ?", $columnsList));
         $sql = "UPDATE $this->table SET $set WHERE " . implode(' AND ', $this->where);
 
         self::logQuery($sql, [...array_values($data), ...$this->parameters]);
@@ -255,9 +282,9 @@ class QueryBuilder
             throw new Exception("Delete requires at least one WHERE condition to prevent mass deletions.");
         }
 
-        self::logQuery($sql, $this->parameters);
-
         $sql = "DELETE FROM $this->table WHERE " . implode(' AND ', $this->where);
+
+        self::logQuery($sql, $this->parameters);
         $stmt = $this->pdo->prepare($sql);
         $ret = $stmt->execute($this->parameters);
         $this->where = [];
@@ -288,5 +315,49 @@ class QueryBuilder
         $this->where = [];
         $this->parameters = [];
         return $query->fetch() ?: null;
+    }
+
+    /**
+     * Executes a custom SQL query.
+     *
+     * @param string $sql The full SQL query.
+     * @param array $params The parameters for prepared statement.
+     * @return array
+     */
+    public function customQuery(string $sql, array $params = []): array
+    {
+        self::logQuery($sql, $params);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    private function validateIdentifier(string $identifier, string $context): string
+    {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/', $identifier)) {
+            throw new InvalidArgumentException("Invalid {$context} identifier: {$identifier}");
+        }
+
+        return $identifier;
+    }
+
+    private function validateSelectExpression(string $expression): string
+    {
+        if ($expression === '*') {
+            return $expression;
+        }
+
+        return $this->validateIdentifier($expression, 'column');
+    }
+
+    private function validateOperator(string $operator): string
+    {
+        $operator = strtoupper(trim($operator));
+
+        if (!in_array($operator, self::ALLOWED_OPERATORS, true)) {
+            throw new InvalidArgumentException("Invalid SQL operator: {$operator}");
+        }
+
+        return $operator;
     }
 }
