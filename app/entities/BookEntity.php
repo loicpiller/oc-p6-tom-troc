@@ -19,6 +19,8 @@ class BookEntity extends BaseEntity
     private int $status_id;
     private ?BookStatusEntity $status = null;
 
+    private ?\DateTimeImmutable $createdAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -39,7 +41,7 @@ class BookEntity extends BaseEntity
         $this->title = $title;
     }
 
-    public function getAuthor(): string
+    public function getAuthor(): ?string
     {
         return $this->author;
     }
@@ -109,6 +111,19 @@ class BookEntity extends BaseEntity
     {
         $this->status = $status;
         $this->status_id = $status->getId();
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(string|\DateTimeImmutable $value): void
+    {
+        if (is_string($value)) {
+            $value = new \DateTimeImmutable($value);
+        }
+        $this->createdAt = $value;
     }
 }
 

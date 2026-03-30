@@ -1,0 +1,98 @@
+@import 'color_palette';
+
+#main-container {
+  display: flex;
+}
+
+.book-cover {
+  width: 50%;
+}
+.book-infos {
+  width: 50%;
+  max-width: 40vw;
+  display: flex;
+  flex-direction: column;
+  padding: 80px;
+  gap: 30px;
+
+  .btn {
+    text-align: center;
+    margin-top: 60px;
+  }
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  font-size: 8px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.book-author {
+  color: $dark-gray;
+  position: relative;
+  margin-bottom: 30px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    width: 30px;
+    height: 1px;
+    background: $dark-gray;
+  }
+}
+
+.user-card {
+  font-size: 14px;
+  background-color: white;
+  width: fit-content;
+  padding: 6px 17px 6px 6px;
+  border-radius: 114px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+  color: $darker-gray;
+  transition: color 0.2s ease;
+
+  .user-card-avatar {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: $primary-color;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      border-radius: 50%;
+    }
+  }
+
+  &:hover {
+    color: $primary-color;
+
+    .user-card-avatar::after {
+      opacity: 0.6;
+    }
+  }
+}
