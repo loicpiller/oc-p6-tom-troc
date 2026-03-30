@@ -143,4 +143,75 @@ class BookController
             'error' => $error,
         ]);
     }
+
+    public function create(): void
+    {
+        if (!isset($_SESSION['user'])) {
+            header('Location: ' . action_url('connexion'));
+            exit();
+        }
+
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+            if ($contentLength > 0 && empty($_POST) && empty($_FILES)) {
+                $error = "L'image est trop volumineuse.";
+            } else {
+                $title = trim((string) ($_POST['title'] ?? ''));
+                $author = trim((string) ($_POST['author'] ?? ''));
+                $description = trim((string) ($_POST['description'] ?? ''));
+                $statusId = (int) ($_POST['status_id'] ?? 0);
+
+                if ($title === '' || $author === '' || $statusId < 1) {
+                    $error = "Merci de remplir tous les champs obligatoires.";
+                } else {
+                    /** @var \App\Entities\UserEntity $user */
+                    $user = $_SESSION['user'];
+
+                    $bookData = [
+                        'title' => $title,
+                        'author' => $author,
+                        'description' => $description !== '' ? $description : null,
+                        'status_id' => $statusId,
+                        'user_id' => $user->getId(),
+                        'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                    ];
+
+                    if (!empty($_FILES['image']['name'])) {
+                        if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                            $error = "L'image est trop volumineuse.";
+                        } else {
+                            try {
+                                $bookData['image'] = upload_image($_FILES['image'], 'upload_img', 800);
+                            } catch (\Exception $e) {
+                                $error = "L'image est trop volumineuse ou dans un format non supporté (JPEG/PNG uniquement).";
+                            }
+                        }
+                    }
+
+                    if ($error === null) {
+                        $this->bookRepo->save($bookData);
+                        header('Location: ' . action_url('mon-compte') . '#my-books');
+                        exit();
+                    }
+                }
+            }
+        }
+
+        $statuses = $this->bookStatusRepo->getAll();
+
+        $view = new View("Ajouter un livre");
+        $view->addStyle("book_edit");
+        $view->render("pages/create_book", [
+            'statuses' => $statuses,
+            'error' => $error,
+            'formData' => [
+                'title' => (string) ($_POST['title'] ?? ''),
+                'author' => (string) ($_POST['author'] ?? ''),
+                'description' => (string) ($_POST['description'] ?? ''),
+                'status_id' => (int) ($_POST['status_id'] ?? 1),
+            ],
+        ]);
+    }
 }

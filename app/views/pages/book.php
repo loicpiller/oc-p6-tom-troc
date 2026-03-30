@@ -14,7 +14,7 @@
             <h2>Propriétaire</h2>
             <a class="user-card" href="<?= action_url('profile/{id}', ['id' => $book->getUser()->getId()]); ?>">
                 <div class="user-card-avatar">
-                    <img src="<?= img_url("default_book_picture.jpg"); ?>">
+                    <img src="<?= img_url($book->getUser()->getAvatar()); ?>">
                 </div>
                 <span><?= htmlspecialchars($book->getUser()->getUsername()); ?></span>
             </a>

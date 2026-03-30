@@ -98,5 +98,8 @@
                 <?php endforeach ?>
             </tbody>
         </table>
+        <div class="my-books-actions">
+            <a class="btn btn--primary" href="<?= action_url('livre/nouveau') ?>">Nouveau livre</a>
+        </div>
     </section>
 <div>

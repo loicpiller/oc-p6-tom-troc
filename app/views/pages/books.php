@@ -16,7 +16,7 @@
         <?php foreach ($books as $book): ?>
             <a href="<?= action_url('livre/{id}', ['id' => $book->getId()]); ?>" class="book-card">
                 <div class="book-card-cover">
-                    <img src="<?= img_url("default_book_picture.jpg"); ?>">
+                    <img src="<?= $book->getImage() ? img_url($book->getImage()) : img_url("default_book_picture.jpg"); ?>">
                 </div>
                 <div class="card-body">
                     <span class="title"><?= htmlspecialchars($book->getTitle()); ?></span>

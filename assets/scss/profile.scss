@@ -17,6 +17,12 @@ main {
   gap: 30px;
 }
 
+.my-books-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
 .profile {
   display: flex;
   gap: 35px;

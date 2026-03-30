@@ -7,6 +7,7 @@ return [
     '/deconnexion' => 'UserController@logout',
     '/mon-compte' => 'UserController@profile',
     '/livres-echangeables' => 'BookController@index',
+    '/livre/nouveau' => 'BookController@create',
     '/livre/{id}' => 'BookController@bookDetails',
     '/livre/{id}/edition' => 'BookController@edit',
     '/livre/{id}/supprimer' => 'BookController@delete',
