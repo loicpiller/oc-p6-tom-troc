@@ -5,6 +5,7 @@ return [
     'DB_USER' => 'root',
     'DB_PASS' => 'root',
     'DB_CHARSET' => 'utf8mb4',
-    'DB_NAME' => 'name',
+    'DB_NAME' => 'tom_troc',
     'APP_ENV' => 'development',
+    'BASE_URL' => 'http://localhost:8000',
 ];
