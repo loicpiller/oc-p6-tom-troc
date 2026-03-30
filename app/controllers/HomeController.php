@@ -3,12 +3,19 @@
 namespace App\Controllers;
 
 use MVC\Core\View;
+use App\Repositories\BookRepository;
 
 class HomeController
 {
     public function index(): void
     {
-        $view = new View("Home Page");
-        $view->render("pages/home", $data = ['paragraph' => 'Welcome to our home page!']);
+        $bookRepo = new BookRepository();
+        $books = $bookRepo->getLast(4);
+
+        $view = new View("Accueil");
+        $view->addStyle("home");
+        $view->render("pages/home", [
+            'books' => $books,
+        ]);
     }
 }

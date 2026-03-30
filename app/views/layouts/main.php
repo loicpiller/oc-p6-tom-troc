@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title><?php echo $title; ?></title>
+        <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></title>
         <?php foreach ($styles as $style): ?>
         <link rel="stylesheet" href="<?= "/public/css/$style.css" ?>">
         <?php endforeach; ?>
@@ -12,17 +12,17 @@
         <header>
             <img src="<?= img_url("logo/main_logo.svg") ?>" alt="Logo Tom Troc sans texte" />
             <nav id="main-nav" aria-label="Navigation principale">
-                <a href="<?= action_url('/') ?>">Accueil</a>
-                <a href="">Nos livres à l'échange</a>
+                <a href="<?= action_url('/'); ?>">Accueil</a>
+                <a href="<?= action_url('livres-echangeables'); ?>">Nos livres à l'échange</a>
             </nav>
             <nav id="user-actions-nav" aria-label="Navigation pour les actions utilisateur">
                 <?php if (isset($_SESSION['user'])): ?>
-                    <a href=""><img src="<?= img_url("icons/messaging.svg") ?>" alt="Icon de la messagerie" />Messagerie</a>
-                    <a href="<?= action_url("mon-compte") ?>"><img src="<?= img_url("icons/account.svg") ?>" alt="Icon de l'accès au compte utilisateur" />Mon compte</a>
-                    <a href="<?= action_url("deconnexion") ?>">Déconnexion</a>
+                    <a href="<?= action_url("messages") ?>"><img src="<?= img_url("icons/messaging.svg") ?>" alt="Icon de la messagerie" />Messagerie</a>
+                    <a href="<?= action_url("mon-compte"); ?>"><img src="<?= img_url("icons/account.svg") ?>" alt="Icon de l'accès au compte utilisateur" />Mon compte</a>
+                    <a href="<?= action_url("deconnexion"); ?>">Déconnexion</a>
                 <?php else: ?>
-                    <a href="<?= action_url("inscription") ?>">Inscription</a>
-                    <a href="<?= action_url("connexion") ?>">Connexion</a>
+                    <a href="<?= action_url("inscription"); ?>">Inscription</a>
+                    <a href="<?= action_url("connexion"); ?>">Connexion</a>
                 <?php endif ?>
             </nav>
         </header>
@@ -35,6 +35,7 @@
             <p>Tom Troc©</p>
             <img src="<?= img_url("logo/min_logo.svg") ?>" alt="Logo Tom Troc sans texte" />
         </footer>
+        <?php $this->renderJS(); ?>
     </body>
 </html>
 <?php
