@@ -16,7 +16,7 @@ Avant de lancer le projet, verifiez que vous avez :
 ### 1. Cloner le projet
 
 ```bash
-git clone <url-du-repo>
+git clone https://github.com/loicpiller/oc-p6-tom-troc.git
 cd oc-p6-tom-troc
 ```
 
